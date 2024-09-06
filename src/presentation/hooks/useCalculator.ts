@@ -247,15 +247,12 @@ export const useCalculator = () => {
             return;
         }
 
+        if( subResult.includes('Error') ) { return; }
 
- /*        if( subResult !== INITIAL_STATES.subResult ){
-            // This will only be triggered when the user tries to calcutate after having done it previously
-            const [,newResult] = subResult.split('= ');
+        if( result === INITIAL_STATES.result  &&
+            ( operator === INITIAL_STATES.operator || firstCombo === INITIAL_STATES.firstCombo )
+         ){ return; } 
 
-            const newSecondCombo = (secondCombo === INITIAL_STATES.secondCombo) ? newResult : secondCombo;
-            handleOperatorSign( newResult , newSecondCombo );
-        }else */
-        if( result === INITIAL_STATES.result ){ return; } 
         if( secondCombo === INITIAL_STATES.secondCombo ){
             
             handleOperatorSign( firstCombo , firstCombo );
@@ -281,10 +278,13 @@ export const useCalculator = () => {
         let _operator = "";
         switch ( operator ) {
             case OPERATOR_DICTIONARY.MULTIPLICATION:
-                result = `${Number( firstCombo ) * Number( secondCombo )}`;
-                result = ( result.includes('.') ? Number(result).toFixed(2) : result ).replace('.',',');
-                _first = `${_first}`.replace('.' , ',');
-                _second = `${_second}`.replace('.',',');
+                result = '0';
+                if( _first !== '0' || _second !== '0' ) {
+                    result = `${Number( firstCombo ) * Number( secondCombo )}`;
+                    result = ( result.includes('.') ? Number(result).toFixed(2) : result ).replace('.',',');
+                    _first = `${_first}`.replace('.' , ',');
+                    _second = `${_second}`.replace('.',',');
+                }
                 setResult( INITIAL_STATES.result );
                 setFirstCombo( INITIAL_STATES.firstCombo );
                 setSecondCombo( INITIAL_STATES.secondCombo );
@@ -292,15 +292,23 @@ export const useCalculator = () => {
                 setSubResult( `(${_first}) ${_operator} (${_second}) = ${result}` );
                 break;
             case OPERATOR_DICTIONARY.DIVISION:
-                result = `${Number( firstCombo ) / Number( secondCombo )}`;
-                result = ( result.includes('.') ? Number(result).toFixed(2) : result ).replace('.',',');
-                _first = `${_first}`.replace('.' , ',');
-                _second = `${_second}`.replace('.',',');
+
+                if( _first !== '0' && _second === '0' ) {
+                    result = 'Error';
+                } else if( _first === '0' && _second !== '0' ) {
+                    result = '0'
+                }else if( _first !== '0' && _second !== '0' ) {
+                    result = `${Number( firstCombo ) / Number( secondCombo )}`;
+                    result = ( result.includes('.') ? Number(result).toFixed(2) : result ).replace('.',',');
+                    _first = `${_first}`.replace('.' , ',');
+                    _second = `${_second}`.replace('.',',');
+                }
                 setResult( INITIAL_STATES.result );
                 setFirstCombo( INITIAL_STATES.firstCombo );
                 setSecondCombo( INITIAL_STATES.secondCombo );
                 _operator = OPERATOR_DICTIONARY.DIVISION;
                 setSubResult( `(${_first}) ${_operator} (${_second}) = ${result}` );
+                
                 break;
             case OPERATOR_DICTIONARY.ADDITION:
                 result = `${Number( firstCombo ) + Number( secondCombo )}`;
